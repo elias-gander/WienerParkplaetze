@@ -43,6 +43,16 @@ function getVisibleTiles() {
   return tiles;
 }
 
+function whenClicked(e) {
+  console.log(e);
+}
+
+function onEachFeature(feature, layer) {
+  layer.on({
+    click: whenClicked,
+  });
+}
+
 async function loadTiles() {
   if (map.getZoom() >= minZoom) {
     var neededTileIds = getVisibleTiles();
@@ -56,6 +66,7 @@ async function loadTiles() {
           tileId,
           await L.geoJSON(data, {
             style: { color: "blue", weight: 1, opacity: 0.7 },
+            onEachFeature: onEachFeature,
           })
         );
       }
