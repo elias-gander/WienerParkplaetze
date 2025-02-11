@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vienna Parking Spots</title>
+    <title>Wiener Parkplätze</title>
     <link
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -25,6 +25,29 @@
   </head>
   <body>
     <div id="map"></div>
+    <div id="zoom-hint">Reinzoomen für Parkplätze</div>
+    <div id="infos">
+      <p>
+        Basierend auf der Flächen-Mehrzweckkarte (FMZK) der Magistratsabteilung
+        für Stadtvermessung MA 41.
+      </p>
+      <p>
+        Siehe
+        <a
+          href="https://www.data.gv.at/katalog/dataset/7cf0da04-1f77-4321-929e-78172c74aa0b"
+          target="_blank"
+          >FMZK</a
+        >
+      </p>
+      <p>
+        <a
+          href="https://elias-gander.github.io/2025-2-11-wiener-parkplaetze"
+          target="_blank"
+          >Weitere Informationen und source code</a
+        >
+      </p>
+    </div>
+    <span id="infos-link">?</span>
     <script src="script.js"></script>
   </body>
 </html>

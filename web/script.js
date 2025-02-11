@@ -1,4 +1,13 @@
-var map = L.map("map").setView([48.2082, 16.3738], 13); // Vienna center
+var map = L.map("map", {
+  center: [48.2082, 16.3738],
+  zoom: 12,
+  maxZoom: 23,
+  minZoom: 10,
+  maxBounds: [
+    [48.0, 16.2],
+    [48.4, 16.6],
+  ],
+}).setView([48.2082, 16.3738], 13); // Vienna center
 var minZoom = 17; // Show parking spots only at zoom 15+
 var tileSize = 0.005; // 500m in degrees (~WGS84 near Vienna)
 var loadedTiles = new Map(); // Store loaded tiles
@@ -9,12 +18,16 @@ var gridBounds = {
   maxx: 16.5464744,
   maxy: 48.31235361,
 };
+const infosLink = document.getElementById("infos-link");
+const infos = document.getElementById("infos");
+var zoomHint = document.getElementById("zoom-hint");
 
 maplibregl.setRTLTextPlugin(
   "https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.2.3/mapbox-gl-rtl-text.min.js"
 );
 L.maplibreGL({
-  style: "https://tiles-eu.stadiamaps.com/styles/stamen_toner_lite.json",
+  style:
+    "https://tiles-eu.stadiamaps.com/styles/stamen_toner_lite.json?api_key=9cb5a2cf-4b74-4e87-ade1-320768b874d4",
   attribution:
     '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
 }).addTo(map);
@@ -43,18 +56,15 @@ function getVisibleTiles() {
   return tiles;
 }
 
-function whenClicked(e) {
-  console.log(e);
-}
-
 function onEachFeature(feature, layer) {
-  layer.on({
-    click: whenClicked,
+  layer.on("click", function (e) {
+    console.log(e);
   });
 }
 
 async function loadTiles() {
   if (map.getZoom() >= minZoom) {
+    zoomHint.classList.add("hidden");
     var neededTileIds = getVisibleTiles();
 
     for (const tileId of neededTileIds) {
@@ -82,14 +92,11 @@ async function loadTiles() {
       .filter((tileId) => !displayedTiles.get(tileId))
       .forEach((tileId) => {
         tile = loadedTiles.get(tileId);
-        if (tile) {
-          map.addLayer(tile);
-          displayedTiles.set(tileId, tile);
-        } else {
-          console.log(`badboi => ${tileId}`);
-        }
+        map.addLayer(tile);
+        displayedTiles.set(tileId, tile);
       });
   } else {
+    zoomHint.classList.remove("hidden");
     displayedTiles.forEach((value, _) => map.removeLayer(value));
     displayedTiles = new Map();
   }
@@ -97,3 +104,14 @@ async function loadTiles() {
 
 map.on("zoomend moveend", loadTiles);
 loadTiles();
+
+infosLink.addEventListener("click", (event) => {
+  event.stopPropagation();
+  if (infos.classList.contains("visible")) {
+    infos.classList.remove("visible");
+    infosLink.textContent = "?";
+  } else {
+    infos.classList.add("visible");
+    infosLink.textContent = "X";
+  }
+});

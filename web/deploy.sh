@@ -7,7 +7,7 @@ if [ -z "$1" ]; then
 fi
 
 destination="$1"
-folder_name="parkplaetze-umverteilen"  # Set your folder name here
+folder_name="wiener-parkplaetze"  # Set your folder name here
 target_path="$destination/$folder_name"
 
 # If the target folder exists, remove it
