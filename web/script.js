@@ -7,7 +7,7 @@ class StreetObject {
   }
 }
 
-const car = new StreetObject("Kfz", 1, "kfz", true);
+const parkingSpot = new StreetObject("Parkplatz", 1, "parkplatz", true);
 const tree = new StreetObject("Baum", 2, "baum");
 const flowerBed = new StreetObject("Blumenbeet", 3, "blumenbeet");
 const raisedBed = new StreetObject("Hochbeet", 4, "hochbeet");
@@ -17,7 +17,7 @@ const bikeLane = new StreetObject("Radweg", 7, "radweg");
 const schanigarten = new StreetObject("Schanigarten", 8, "schanigarten", true);
 const nothing = new StreetObject("Freifläche", 9, "freiflaeche");
 const streetObjects = [
-  car,
+  parkingSpot,
   tree,
   flowerBed,
   raisedBed,
@@ -37,9 +37,13 @@ const gridBounds = {
   maxy: 48.31235361,
 };
 const assetPixels = 159;
-const zoomHint = document.getElementById("zoom-hint");
-const infosLink = document.getElementById("infos-link");
-const infos = document.getElementById("infos");
+const zoomHintElement = document.getElementById("zoom-hint");
+const loadingIndicatorElement = document.getElementById("loading-indicator");
+const infosLinkElement = document.getElementById("infos-link");
+const infosElement = document.getElementById("infos");
+const remainingParkingSpotsElement = document.getElementById("stats-remaining");
+const usedParkingSpotsElement = document.getElementById("stats-used");
+const actionsElement = document.getElementById("actions");
 const map = new maplibregl.Map({
   container: "map",
   style: "https://tiles.stadiamaps.com/styles/stamen_toner_lite.json",
@@ -52,6 +56,9 @@ const map = new maplibregl.Map({
     [gridBounds.maxx, gridBounds.maxy],
   ],
 });
+var remainingParkingSpots = 258205;
+var usedParkingSpots = 0;
+var selectedFeature;
 
 function getVisibleTileIds() {
   var bounds = map.getBounds();
@@ -85,76 +92,52 @@ function getPixelCount(metres, zoom) {
   return metres / metersPerPixel;
 }
 
-function onClick(e) {
-  const feature = e.features[0];
-  map.setFeatureState(
-    { source: feature.source, id: feature.id },
-    { selected: true }
+function format(number) {
+  return new Intl.NumberFormat("de-DE", { useGrouping: "always" }).format(
+    number
   );
-
-  const bbox = turf.bbox(
-    map
-      .getSource(feature.source)
-      ._data.features.find((f) => f.id === feature.id)
-  );
-  const northLng = (bbox[0] + bbox[2]) / 2;
-  const northLat = bbox[3];
-  const northLngLat = [northLng, northLat];
-  const southLng = (bbox[0] + bbox[2]) / 2;
-  const southLat = bbox[1];
-  const southLngLat = [southLng, southLat];
-  const northPoint = map.project(northLngLat);
-  const popupHeight = 150;
-  let popupLngLat;
-  let popupAnchor;
-  if (northPoint.y - popupHeight >= 0) {
-    popupLngLat = northLngLat;
-    popupAnchor = "bottom";
-  } else {
-    popupLngLat = southLngLat;
-    popupAnchor = "top";
-  }
-  let popup = new maplibregl.Popup({ anchor: popupAnchor })
-    .setLngLat(popupLngLat)
-    .setHTML(
-      streetObjects
-        .map(
-          (obj) =>
-            `<button onclick="placeStreetObject(\'${feature.source}\', ${feature.id}, ${obj.id}, ${obj.takesUpFullSpot})">${obj.name}</button>`
-        )
-        .join("")
-    );
-  popup.on("close", () => {
-    map.setFeatureState(
-      { source: feature.source, id: feature.id },
-      { selected: false }
-    );
-  });
-  popup.addTo(map);
 }
 
-function placeStreetObject(
-  sourceId,
-  featureId,
-  streetObjectId,
-  newTakesUpFullSpot
-) {
-  const source = map.getSource(sourceId);
+function placeStreetObject(newStreetObjectId, newTakesUpFullSpot) {
+  if (!selectedFeature) {
+    return;
+  }
+  const source = map.getSource(selectedFeature.source);
   const data = JSON.parse(JSON.stringify(source._data));
   data.features = data.features.map((feature) => {
-    if (feature.id === featureId) {
+    if (feature.id === selectedFeature.id) {
+      const currentStreetObjectId =
+        feature.properties.streetObjectId ?? parkingSpot.id;
+      if (
+        currentStreetObjectId === parkingSpot.id &&
+        newStreetObjectId !== parkingSpot.id
+      ) {
+        usedParkingSpotsElement.textContent = format(++usedParkingSpots);
+        remainingParkingSpotsElement.textContent = format(
+          --remainingParkingSpots
+        );
+      }
+      if (
+        currentStreetObjectId !== parkingSpot.id &&
+        newStreetObjectId === parkingSpot.id
+      ) {
+        usedParkingSpotsElement.textContent = format(--usedParkingSpots);
+        remainingParkingSpotsElement.textContent = format(
+          ++remainingParkingSpots
+        );
+      }
       const currentTakesUpFullSpot = streetObjects.find(
-        (obj) => obj.id === (feature.properties.streetObjectId ?? car.id)
+        (obj) => obj.id === currentStreetObjectId
       ).takesUpFullSpot;
       if (
         newTakesUpFullSpot ||
         currentTakesUpFullSpot ||
         feature.properties.streetObjectId2
       ) {
-        feature.properties.streetObjectId = streetObjectId;
-        feature.properties.streetObjectId2 = null;
+        feature.properties.streetObjectId = newStreetObjectId;
+        feature.properties.streetObjectId2 = undefined;
       } else {
-        feature.properties.streetObjectId2 = streetObjectId;
+        feature.properties.streetObjectId2 = newStreetObjectId;
       }
     }
     return feature;
@@ -182,7 +165,7 @@ async function loadTiles() {
           "fill-color": "blue",
           "fill-opacity": [
             "case",
-            ["boolean", ["feature-state", "selected"], false],
+            ["boolean", ["feature-state", "isSelected"], false],
             0.2,
             0,
           ],
@@ -226,7 +209,6 @@ async function loadTiles() {
         }
       });
 
-      map.on("click", tileId, onClick);
       map.on("mouseenter", tileId, function () {
         map.getCanvas().style.cursor = "pointer";
       });
@@ -237,16 +219,31 @@ async function loadTiles() {
   }
 }
 
-infosLink.addEventListener("click", () => {
-  if (infos.classList.contains("visible")) {
-    infos.classList.remove("visible");
-    infosLink.textContent = "?";
+usedParkingSpotsElement.textContent = format(usedParkingSpots);
+remainingParkingSpotsElement.textContent = format(remainingParkingSpots);
+actionsElement.innerHTML = streetObjects
+  .map(
+    (obj) =>
+      `<button onclick="placeStreetObject(${obj.id}, ${obj.takesUpFullSpot})"><img src="assets/${obj.assetName}.png"><span>${obj.name}</span></button>`
+  )
+  .join("");
+infosLinkElement.addEventListener("click", () => {
+  if (infosElement.classList.contains("visible")) {
+    infosElement.classList.remove("visible");
+    infosLinkElement.textContent = "?";
   } else {
-    infos.classList.add("visible");
-    infosLink.textContent = "X";
+    infosElement.classList.add("visible");
+    infosLinkElement.textContent = "X";
   }
 });
 map.on("load", async () => {
+  map.on("sourcedata", (e) => {
+    loadingIndicatorElement.classList.remove("hidden");
+  });
+  map.on("idle", () => {
+    loadingIndicatorElement.classList.add("hidden");
+  });
+
   for (let obj of streetObjects) {
     const response = await map.loadImage(`assets/${obj.assetName}.png`);
     map.addImage(obj.assetName, response.data);
@@ -255,10 +252,33 @@ map.on("load", async () => {
   map.on("moveend", loadTiles);
   map.on("zoom", () => {
     if (map.getZoom() >= minZoom) {
-      zoomHint.classList.add("hidden");
+      zoomHintElement.classList.add("hidden");
     } else {
-      zoomHint.classList.remove("hidden");
+      zoomHintElement.classList.remove("hidden");
+      if (selectedFeature) {
+        map.setFeatureState(selectedFeature, { isSelected: false });
+        selectedFeature = undefined;
+        actionsElement.classList.add("hidden");
+      }
     }
+  });
+  map.on("click", (e) => {
+    if (selectedFeature) {
+      map.setFeatureState(selectedFeature, { isSelected: false });
+      selectedFeature = undefined;
+    }
+    const feature = map
+      .queryRenderedFeatures(e.point)
+      .find((f) => f.layer.type === "fill" && f.source.match(/^x\d+_y\d+$/));
+    if (!feature) {
+      actionsElement.classList.add("hidden");
+      return;
+    }
+    console.log(feature);
+    const newSelectedFeature = { source: feature.source, id: feature.id };
+    map.setFeatureState(newSelectedFeature, { isSelected: true });
+    selectedFeature = newSelectedFeature;
+    actionsElement.classList.remove("hidden");
   });
 
   await loadTiles();

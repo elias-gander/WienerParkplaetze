@@ -9,24 +9,32 @@
       rel="stylesheet"
       href="https://unpkg.com/maplibre-gl/dist/maplibre-gl.css"
     />
-    <script src="https://unpkg.com/@turf/turf@^7/turf.min.js"></script>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <div id="map"></div>
-    <div id="zoom-hint">Reinzoomen für Parkplätze</div>
+    <span id="zoom-hint">Reinzoomen für Parkplätze</span>
+    <span id="loading-indicator" class="hidden"></span>
+    <div id="stats">
+      <span id="title">Wiener Parkplätze</span>
+      <div id="grid">
+        <span class="stat" id="stats-used"></span>
+        <span class="label">verbraucht</span>
+        <span class="stat" id="stats-remaining"></span>
+        <span class="label">verbleibend</span>
+      </div>
+    </div>
+    <div id="actions" class="hidden"></div>
     <div id="infos">
       <p>
-        Basierend auf der Flächen-Mehrzweckkarte (FMZK) der Magistratsabteilung
-        für Stadtvermessung MA 41.
-      </p>
-      <p>
-        Siehe
+        Die Berechnung von Position, Form und Anzahl der Parkplätze basiert auf
+        den Daten der
         <a
           href="https://www.data.gv.at/katalog/dataset/7cf0da04-1f77-4321-929e-78172c74aa0b"
           target="_blank"
-          >FMZK</a
+          >Flächen-Mehrzweckkarte</a
         >
+        (FMZK) der Magistratsabteilung für Stadtvermessung MA 41.
       </p>
       <p>
         <a
@@ -35,6 +43,7 @@
           >Weitere Informationen und source code</a
         >
       </p>
+      <p>Mehr Platz für Menschen!</p>
     </div>
     <span id="infos-link">?</span>
     <script src="script.js"></script>
