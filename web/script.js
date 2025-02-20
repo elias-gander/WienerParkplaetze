@@ -137,6 +137,35 @@ async function loadTiles() {
           "fill-opacity": 0,
         },
       });
+      map.addLayer({
+        id: tileId + "_line",
+        type: "line",
+        source: tileId,
+        minzoom: minZoom,
+        filter: ["==", ["coalesce", ["get", "isTree"], false], false],
+        paint: {
+          "line-opacity": 0.2,
+          "line-dasharray": [3, 2],
+          "line-width": [
+            "interpolate",
+            ["exponential", 2],
+            ["zoom"],
+            minZoom,
+            getPixelCount(0.2, minZoom),
+            maxZoom,
+            getPixelCount(0.2, maxZoom),
+          ],
+          "line-offset": [
+            "interpolate",
+            ["exponential", 2],
+            ["zoom"],
+            minZoom,
+            getPixelCount(0.1, minZoom),
+            maxZoom,
+            getPixelCount(0.1, maxZoom),
+          ],
+        },
+      });
       for (let i = 0; i < vehicleAssetCount; i++) {
         for (rotation of vehicleAssetRotations) {
           map.addLayer({
