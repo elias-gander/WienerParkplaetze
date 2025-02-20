@@ -1,32 +1,3 @@
-class StreetObject {
-  constructor(name, id, assetName, takesUpFullSpot = false) {
-    this.name = name;
-    this.id = id;
-    this.assetName = assetName;
-    this.takesUpFullSpot = takesUpFullSpot;
-  }
-}
-
-const parkingSpot = new StreetObject("Parkplatz", 1, "parkplatz", true);
-const tree = new StreetObject("Baum", 2, "baum");
-const flowerBed = new StreetObject("Blumenbeet", 3, "blumenbeet");
-const raisedBed = new StreetObject("Hochbeet", 4, "hochbeet");
-const seating = new StreetObject("Sitzgelegenheit", 5, "sitzgelegenheit");
-const sidewalk = new StreetObject("Gehsteig", 6, "gehsteig");
-const bikeLane = new StreetObject("Radweg", 7, "radweg");
-const schanigarten = new StreetObject("Schanigarten", 8, "schanigarten", true);
-const nothing = new StreetObject("Freifläche", 9, "freiflaeche");
-const streetObjects = [
-  parkingSpot,
-  tree,
-  flowerBed,
-  raisedBed,
-  seating,
-  sidewalk,
-  bikeLane,
-  schanigarten,
-  nothing,
-];
 const minZoom = 17;
 const maxZoom = 21;
 const tileSize = 0.005;
@@ -36,14 +7,21 @@ const gridBounds = {
   maxx: 16.5464744,
   maxy: 48.31235361,
 };
-const assetPixels = 159;
+const assetPixels = 256;
+const vehicleAssetRotations = [
+  0, 22, 45, 68, 90, 112, 135, 158, 180, 202, 225, 248, 270, 292, 315, 338,
+];
+const vehicleAssetCount = 5;
+const treeAssetCount = 1;
 const zoomHintElement = document.getElementById("zoom-hint");
 const loadingIndicatorElement = document.getElementById("loading-indicator");
 const infosLinkElement = document.getElementById("infos-link");
 const infosElement = document.getElementById("infos");
-const remainingParkingSpotsElement = document.getElementById("stats-remaining");
-const usedParkingSpotsElement = document.getElementById("stats-used");
-const actionsElement = document.getElementById("actions");
+const remainingParkingSpotsElement = document.getElementById(
+  "remaining-parking-spots"
+);
+const treesPlantedElement = document.getElementById("trees-planted");
+const explosionElement = document.getElementById("explosion");
 const map = new maplibregl.Map({
   container: "map",
   style: "https://tiles.stadiamaps.com/styles/stamen_toner_lite.json",
@@ -51,14 +29,19 @@ const map = new maplibregl.Map({
   zoom: 12,
   maxZoom: maxZoom,
   minZoom: 10,
+  pitch: 30,
+  dragRotate: false,
+  pitchWithRotate: false,
+  rollEnabled: false,
+  touchPitch: false,
   maxBounds: [
     [gridBounds.minx, gridBounds.miny],
     [gridBounds.maxx, gridBounds.maxy],
   ],
 });
 var remainingParkingSpots = 258205;
-var usedParkingSpots = 0;
-var selectedFeature;
+var treesPlanted = 0;
+var isPlanting = false;
 
 function getVisibleTileIds() {
   var bounds = map.getBounds();
@@ -98,51 +81,40 @@ function format(number) {
   );
 }
 
-function placeStreetObject(newStreetObjectId, newTakesUpFullSpot) {
-  if (!selectedFeature) {
+function plantTree(lngLat, sourceId, featureId) {
+  if (isPlanting) {
     return;
   }
-  const source = map.getSource(selectedFeature.source);
-  const data = JSON.parse(JSON.stringify(source._data));
-  data.features = data.features.map((feature) => {
-    if (feature.id === selectedFeature.id) {
-      const currentStreetObjectId =
-        feature.properties.streetObjectId ?? parkingSpot.id;
-      if (
-        currentStreetObjectId === parkingSpot.id &&
-        newStreetObjectId !== parkingSpot.id
-      ) {
-        usedParkingSpotsElement.textContent = format(++usedParkingSpots);
-        remainingParkingSpotsElement.textContent = format(
-          --remainingParkingSpots
-        );
+  isPlanting = true;
+  setTimeout(
+    () => explosionElement.setAttribute("src", "assets/explosion.gif"),
+    0
+  );
+  const marker = new maplibregl.Marker({ element: explosionElement })
+    .setLngLat(lngLat)
+    .addTo(map);
+  explosionElement.style.width = `${getPixelCount(10, map.getZoom())}px`;
+
+  setTimeout(() => {
+    explosionElement.setAttribute("src", "");
+    marker.remove();
+    isPlanting = false;
+  }, 1000);
+  setTimeout(() => {
+    const source = map.getSource(sourceId);
+    const data = JSON.parse(JSON.stringify(source._data));
+    data.features = data.features.map((feature) => {
+      if (feature.id === featureId) {
+        if (!feature.properties.isTree) {
+          treesPlantedElement.textContent = format(++treesPlanted);
+          remainingParkingSpots.textContent = format(--remainingParkingSpots);
+          feature.properties.isTree = true;
+        }
       }
-      if (
-        currentStreetObjectId !== parkingSpot.id &&
-        newStreetObjectId === parkingSpot.id
-      ) {
-        usedParkingSpotsElement.textContent = format(--usedParkingSpots);
-        remainingParkingSpotsElement.textContent = format(
-          ++remainingParkingSpots
-        );
-      }
-      const currentTakesUpFullSpot = streetObjects.find(
-        (obj) => obj.id === currentStreetObjectId
-      ).takesUpFullSpot;
-      if (
-        newTakesUpFullSpot ||
-        currentTakesUpFullSpot ||
-        feature.properties.streetObjectId2
-      ) {
-        feature.properties.streetObjectId = newStreetObjectId;
-        feature.properties.streetObjectId2 = undefined;
-      } else {
-        feature.properties.streetObjectId2 = newStreetObjectId;
-      }
-    }
-    return feature;
-  });
-  source.setData(data);
+      return feature;
+    });
+    source.setData(data);
+  }, 400);
 }
 
 async function loadTiles() {
@@ -162,71 +134,82 @@ async function loadTiles() {
         source: tileId,
         minzoom: minZoom,
         paint: {
-          "fill-color": "blue",
-          "fill-opacity": [
-            "case",
-            ["boolean", ["feature-state", "isSelected"], false],
-            0.2,
-            0,
-          ],
+          "fill-opacity": 0,
         },
       });
-      streetObjects.forEach((obj) => {
-        const layer = {
-          id: `${tileId}_${obj.assetName}`,
+      for (let i = 0; i < vehicleAssetCount; i++) {
+        for (rotation of vehicleAssetRotations) {
+          map.addLayer({
+            id: `${tileId}_vehicle${i}_${rotation}`,
+            type: "symbol",
+            source: tileId,
+            minzoom: minZoom,
+            filter: [
+              "all",
+              ["==", ["coalesce", ["get", "isTree"], false], false],
+              ["==", ["get", "rotation"], rotation],
+              ["==", ["get", "vehicle_id"], i],
+            ],
+            layout: {
+              "icon-image": ["literal", `vehicle${i}_${rotation}`],
+              "icon-size": [
+                "interpolate",
+                ["exponential", 2],
+                ["zoom"],
+                minZoom,
+                getPixelCount(8, minZoom) / assetPixels,
+                maxZoom,
+                getPixelCount(8, maxZoom) / assetPixels,
+              ],
+              "icon-allow-overlap": true,
+              "icon-padding": 0,
+            },
+          });
+        }
+      }
+      for (let i = 0; i < treeAssetCount; i++) {
+        map.addLayer({
+          id: `${tileId}_tree${i}`,
           type: "symbol",
           source: tileId,
           minzoom: minZoom,
-          filter: ["==", ["coalesce", ["get", "streetObjectId"], 1], obj.id],
+          filter: ["==", ["coalesce", ["get", "isTree"], false], true],
           layout: {
-            "icon-image": ["literal", obj.assetName],
+            "icon-image": ["literal", `tree${i}`],
             "icon-size": [
               "interpolate",
               ["exponential", 2],
               ["zoom"],
               minZoom,
-              getPixelCount(5, minZoom) / assetPixels,
+              getPixelCount(8, minZoom) / assetPixels,
               maxZoom,
-              getPixelCount(5, maxZoom) / assetPixels,
+              getPixelCount(8, maxZoom) / assetPixels,
             ],
-            "icon-rotate": ["get", "rotation"],
             "icon-allow-overlap": true,
             "icon-padding": 0,
-            "icon-anchor": obj.takesUpFullSpot ? "center" : "left",
           },
-        };
-        map.addLayer(layer);
-        if (!obj.takesUpFullSpot) {
-          var additionalLayer = structuredClone(layer);
-          additionalLayer.id += "_2";
-          (additionalLayer.filter = [
-            "==",
-            ["coalesce", ["get", "streetObjectId2"], 1],
-            obj.id,
-          ]),
-            (additionalLayer.layout["icon-anchor"] = "right");
-          map.addLayer(additionalLayer);
-        }
-      });
+        });
+      }
 
-      map.on("mouseenter", tileId, function () {
-        map.getCanvas().style.cursor = "pointer";
+      map.on("mousemove", tileId, (e) => {
+        map.getCanvas().style.cursor = e.features[0].properties.isTree
+          ? ""
+          : "crosshair";
       });
-      map.on("mouseleave", tileId, function () {
+      map.on("mouseleave", tileId, (e) => {
         map.getCanvas().style.cursor = "";
+      });
+      map.on("click", tileId, (e) => {
+        if (!e.features[0].properties.isTree) {
+          plantTree(e.lngLat, tileId, e.features[0].id);
+        }
       });
     }
   }
 }
 
-usedParkingSpotsElement.textContent = format(usedParkingSpots);
+treesPlantedElement.textContent = format(treesPlanted);
 remainingParkingSpotsElement.textContent = format(remainingParkingSpots);
-actionsElement.innerHTML = streetObjects
-  .map(
-    (obj) =>
-      `<button onclick="placeStreetObject(${obj.id}, ${obj.takesUpFullSpot})"><img src="assets/${obj.assetName}.png"><span>${obj.name}</span></button>`
-  )
-  .join("");
 infosLinkElement.addEventListener("click", () => {
   if (infosElement.classList.contains("visible")) {
     infosElement.classList.remove("visible");
@@ -244,9 +227,17 @@ map.on("load", async () => {
     loadingIndicatorElement.classList.add("hidden");
   });
 
-  for (let obj of streetObjects) {
-    const response = await map.loadImage(`assets/${obj.assetName}.png`);
-    map.addImage(obj.assetName, response.data);
+  for (let i = 0; i < vehicleAssetCount; i++) {
+    for (rotation of vehicleAssetRotations) {
+      const response = await map.loadImage(
+        `assets/vehicles/sampled_tiles/vehicle${i}_${rotation}.png`
+      );
+      map.addImage(`vehicle${i}_${rotation}`, response.data);
+    }
+  }
+  for (let i = 0; i < treeAssetCount; i++) {
+    const response = await map.loadImage(`assets/tree${i}.png`);
+    map.addImage(`tree${i}`, response.data);
   }
 
   map.on("moveend", loadTiles);
@@ -255,30 +246,7 @@ map.on("load", async () => {
       zoomHintElement.classList.add("hidden");
     } else {
       zoomHintElement.classList.remove("hidden");
-      if (selectedFeature) {
-        map.setFeatureState(selectedFeature, { isSelected: false });
-        selectedFeature = undefined;
-        actionsElement.classList.add("hidden");
-      }
     }
-  });
-  map.on("click", (e) => {
-    if (selectedFeature) {
-      map.setFeatureState(selectedFeature, { isSelected: false });
-      selectedFeature = undefined;
-    }
-    const feature = map
-      .queryRenderedFeatures(e.point)
-      .find((f) => f.layer.type === "fill" && f.source.match(/^x\d+_y\d+$/));
-    if (!feature) {
-      actionsElement.classList.add("hidden");
-      return;
-    }
-    console.log(feature);
-    const newSelectedFeature = { source: feature.source, id: feature.id };
-    map.setFeatureState(newSelectedFeature, { isSelected: true });
-    selectedFeature = newSelectedFeature;
-    actionsElement.classList.remove("hidden");
   });
 
   await loadTiles();

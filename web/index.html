@@ -4,6 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Wiener Parkplätze</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=VT323&display=swap"
+      rel="stylesheet"
+    />
     <script src="https://unpkg.com/maplibre-gl/dist/maplibre-gl.js"></script>
     <link
       rel="stylesheet"
@@ -16,15 +22,12 @@
     <span id="zoom-hint">Reinzoomen für Parkplätze</span>
     <span id="loading-indicator" class="hidden"></span>
     <div id="stats">
-      <span id="title">Wiener Parkplätze</span>
-      <div id="grid">
-        <span class="stat" id="stats-used"></span>
-        <span class="label">verbraucht</span>
-        <span class="stat" id="stats-remaining"></span>
-        <span class="label">verbleibend</span>
-      </div>
+      <span class="stat" id="remaining-parking-spots"></span>
+      <span class="label">Parkplätze</span>
+      <span class="stat" id="trees-planted"></span>
+      <span class="label">Bäume gepflanzt</span>
     </div>
-    <div id="actions" class="hidden"></div>
+    <img id="explosion" />
     <div id="infos">
       <p>
         Die Berechnung von Position, Form und Anzahl der Parkplätze basiert auf

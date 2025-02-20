@@ -26,6 +26,9 @@ file_patterns=(
     "script.js"
     "styles.css"
     "parkplaetze/*.geojson"
+    "assets/tree0.png"
+    "assets/explosion.gif"
+    "assets/vehicles/sampled_tiles/*.png"
 )
 
 # Build rsync include/exclude parameters

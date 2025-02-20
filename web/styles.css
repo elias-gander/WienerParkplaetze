@@ -4,7 +4,8 @@ body {
   width: 100dvw;
   margin: 0;
   padding: 0;
-  font-family: monospace;
+  font-family: "VT323", monospace;
+  font-size: 20px;
 }
 
 #map {
@@ -25,7 +26,7 @@ body {
   text-align: center;
   line-height: 30px;
   background: white;
-  border: 2px solid rgba(0, 0, 0, 0.2);
+  border: 3px solid black;
 }
 
 #infos {
@@ -36,8 +37,8 @@ body {
   border-radius: 3px;
   transition: transform 0.3s;
   max-width: 200px;
-  background: rgba(255, 255, 255, 0.9);
-  border: 2px solid rgba(0, 0, 0, 0.2);
+  background: white;
+  border: 3px solid black;
   transform: translate(110%, -110%);
 }
 
@@ -51,15 +52,11 @@ body {
   transform: translateX(-50%);
   position: fixed;
   font-size: 1rem;
-  background: rgba(255, 255, 255, 0.9);
-  border: 2px solid rgba(0, 0, 0, 0.2);
+  background: white;
+  border: 3px solid black;
   pointer-events: none;
   padding: 0.5rem;
   border-radius: 3px;
-  text-align: center;
-}
-
-#stats #grid {
   display: grid;
   grid-template-columns: max-content max-content;
   column-gap: 10px;
@@ -80,8 +77,8 @@ body {
   border-radius: 3px;
   transform: translate(-50%, -50%);
   pointer-events: none;
-  background: rgba(255, 255, 255, 0.9);
-  border: 2px solid rgba(0, 0, 0, 0.2);
+  background: white;
+  border: 3px solid black;
   transition: opacity 0.5s;
   font-size: 1.5rem;
   text-align: center;
@@ -120,46 +117,6 @@ body {
   opacity: 0;
 }
 
-#actions {
-  position: fixed;
-  bottom: 10px;
-  left: 50%;
-  max-width: 90%;
-  transform: translate(-50%, 0%);
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-  grid-auto-rows: auto;
-  gap: 10px;
-  transition: transform 0.3s;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 3px;
-  padding: 10px;
-  border: 2px solid rgba(0, 0, 0, 0.2);
-}
-#actions.hidden {
-  transform: translate(-50%, 110%);
-}
-#actions button {
-  float: left;
-  width: 100%;
-  height: 100px;
-  position: relative;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 10px;
-}
-#actions button img {
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  max-width: 100%;
-}
-#actions button span {
-  position: absolute;
-  left: 0;
-  right: 0;
-  text-align: center;
-  bottom: 0;
+#explosion {
+  aspect-ratio: 200/173;
 }
