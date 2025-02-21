@@ -29,11 +29,12 @@ const map = new maplibregl.Map({
   zoom: 12,
   maxZoom: maxZoom,
   minZoom: 10,
-  pitch: 30,
+  pitch: 20,
   dragRotate: false,
   pitchWithRotate: false,
   rollEnabled: false,
   touchPitch: false,
+  touchZoomRotate: false,
   maxBounds: [
     [gridBounds.minx, gridBounds.miny],
     [gridBounds.maxx, gridBounds.maxy],
@@ -122,102 +123,114 @@ async function loadTiles() {
     return;
   }
 
-  var neededTileIds = getVisibleTileIds();
+  const neededTileIds = getVisibleTileIds();
   for (const tileId of neededTileIds) {
     if (!map.getSource(tileId)) {
       response = await fetch(`parkplaetze/${tileId}.geojson`);
       data = await response.json();
       map.addSource(tileId, { type: "geojson", data: data });
-      map.addLayer({
-        id: tileId,
-        type: "fill",
-        source: tileId,
-        minzoom: minZoom,
-        paint: {
-          "fill-opacity": 0,
+      map.addLayer(
+        {
+          id: tileId,
+          type: "fill",
+          source: tileId,
+          minzoom: minZoom,
+          paint: {
+            "fill-opacity": 0,
+          },
         },
-      });
-      map.addLayer({
-        id: tileId + "_line",
-        type: "line",
-        source: tileId,
-        minzoom: minZoom,
-        filter: ["==", ["coalesce", ["get", "isTree"], false], false],
-        paint: {
-          "line-opacity": 0.2,
-          "line-dasharray": [3, 2],
-          "line-width": [
-            "interpolate",
-            ["exponential", 2],
-            ["zoom"],
-            minZoom,
-            getPixelCount(0.2, minZoom),
-            maxZoom,
-            getPixelCount(0.2, maxZoom),
-          ],
-          "line-offset": [
-            "interpolate",
-            ["exponential", 2],
-            ["zoom"],
-            minZoom,
-            getPixelCount(0.1, minZoom),
-            maxZoom,
-            getPixelCount(0.1, maxZoom),
-          ],
+        "3d-buildings"
+      );
+      map.addLayer(
+        {
+          id: tileId + "_line",
+          type: "line",
+          source: tileId,
+          minzoom: minZoom,
+          filter: ["==", ["coalesce", ["get", "isTree"], false], false],
+          paint: {
+            "line-opacity": 0.2,
+            "line-dasharray": [3, 2],
+            "line-width": [
+              "interpolate",
+              ["exponential", 2],
+              ["zoom"],
+              minZoom,
+              getPixelCount(0.2, minZoom),
+              maxZoom,
+              getPixelCount(0.2, maxZoom),
+            ],
+            "line-offset": [
+              "interpolate",
+              ["exponential", 2],
+              ["zoom"],
+              minZoom,
+              getPixelCount(0.1, minZoom),
+              maxZoom,
+              getPixelCount(0.1, maxZoom),
+            ],
+          },
         },
-      });
+        "3d-buildings"
+      );
       for (let i = 0; i < vehicleAssetCount; i++) {
         for (rotation of vehicleAssetRotations) {
-          map.addLayer({
-            id: `${tileId}_vehicle${i}_${rotation}`,
+          map.addLayer(
+            {
+              id: `${tileId}_vehicle${i}_${rotation}`,
+              type: "symbol",
+              source: tileId,
+              minzoom: minZoom,
+              filter: [
+                "all",
+                ["==", ["coalesce", ["get", "isTree"], false], false],
+                ["==", ["get", "rotation"], rotation],
+                ["==", ["get", "vehicle_id"], i],
+              ],
+              layout: {
+                "icon-image": ["literal", `vehicle${i}_${rotation}`],
+                "icon-size": [
+                  "interpolate",
+                  ["exponential", 2],
+                  ["zoom"],
+                  minZoom,
+                  getPixelCount(10, minZoom) / assetPixels,
+                  maxZoom,
+                  getPixelCount(10, maxZoom) / assetPixels,
+                ],
+                "icon-allow-overlap": true,
+                "icon-padding": 0,
+              },
+            },
+            "3d-buildings"
+          );
+        }
+      }
+      for (let i = 0; i < treeAssetCount; i++) {
+        map.addLayer(
+          {
+            id: `${tileId}_tree${i}`,
             type: "symbol",
             source: tileId,
             minzoom: minZoom,
-            filter: [
-              "all",
-              ["==", ["coalesce", ["get", "isTree"], false], false],
-              ["==", ["get", "rotation"], rotation],
-              ["==", ["get", "vehicle_id"], i],
-            ],
+            filter: ["==", ["coalesce", ["get", "isTree"], false], true],
             layout: {
-              "icon-image": ["literal", `vehicle${i}_${rotation}`],
+              "icon-image": ["literal", `tree${i}`],
               "icon-size": [
                 "interpolate",
                 ["exponential", 2],
                 ["zoom"],
                 minZoom,
-                getPixelCount(8, minZoom) / assetPixels,
+                getPixelCount(10, minZoom) / assetPixels,
                 maxZoom,
-                getPixelCount(8, maxZoom) / assetPixels,
+                getPixelCount(10, maxZoom) / assetPixels,
               ],
               "icon-allow-overlap": true,
               "icon-padding": 0,
             },
-          });
-        }
-      }
-      for (let i = 0; i < treeAssetCount; i++) {
-        map.addLayer({
-          id: `${tileId}_tree${i}`,
-          type: "symbol",
-          source: tileId,
-          minzoom: minZoom,
-          filter: ["==", ["coalesce", ["get", "isTree"], false], true],
-          layout: {
-            "icon-image": ["literal", `tree${i}`],
-            "icon-size": [
-              "interpolate",
-              ["exponential", 2],
-              ["zoom"],
-              minZoom,
-              getPixelCount(8, minZoom) / assetPixels,
-              maxZoom,
-              getPixelCount(8, maxZoom) / assetPixels,
-            ],
-            "icon-allow-overlap": true,
-            "icon-padding": 0,
           },
-        });
+          "3d-buildings"
+        );
       }
 
       map.on("mousemove", tileId, (e) => {
@@ -269,7 +282,6 @@ map.on("load", async () => {
     map.addImage(`tree${i}`, response.data);
   }
 
-  map.on("moveend", loadTiles);
   map.on("zoom", () => {
     if (map.getZoom() >= minZoom) {
       zoomHintElement.classList.add("hidden");
@@ -278,5 +290,24 @@ map.on("load", async () => {
     }
   });
 
+  map.addSource("openmaptiles", {
+    url: `https://api.maptiler.com/tiles/v3/tiles.json?key=ud46ehKwd6sMnWr8iEjZ`,
+    type: "vector",
+  });
+  map.addLayer({
+    id: "3d-buildings",
+    source: "openmaptiles",
+    "source-layer": "building",
+    type: "fill-extrusion",
+    minzoom: minZoom,
+    filter: ["!=", ["get", "hide_3d"], true],
+    paint: {
+      "fill-extrusion-color": "lightgray",
+      "fill-extrusion-height": ["get", "render_height"],
+      "fill-extrusion-opacity": 0.5,
+    },
+  });
+
+  map.on("moveend", loadTiles);
   await loadTiles();
 });
