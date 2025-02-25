@@ -6,6 +6,7 @@ body {
   padding: 0;
   font-family: "VT323", monospace;
   font-size: 18px;
+  overflow: hidden;
 }
 
 #map {
