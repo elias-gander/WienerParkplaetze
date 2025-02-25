@@ -1,4 +1,4 @@
-const minZoom = 17;
+const minZoom = 16;
 const maxZoom = 20;
 const tileSize = 0.005;
 const gridBounds = {
