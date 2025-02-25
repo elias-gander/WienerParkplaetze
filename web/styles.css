@@ -77,6 +77,10 @@ body {
   font-weight: bold;
 }
 
+#explosion {
+  aspect-ratio: 200/173;
+}
+
 #zoom-hint,
 #loading-indicator-container {
   position: fixed;
@@ -97,12 +101,9 @@ body {
   transform: translate(-50%, calc(100% + 10px));
 }
 
-#explosion {
-  aspect-ratio: 200/173;
-}
-
 #loading-indicator-text {
   padding-left: 30px;
+  display: inline-block;
 }
 #loading-indicator {
   animation: spin 1s linear infinite;
