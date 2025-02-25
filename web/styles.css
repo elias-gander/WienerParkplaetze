@@ -59,7 +59,6 @@ body {
   left: 50%;
   transform: translateX(-50%);
   position: fixed;
-  font-size: 1rem;
   background: white;
   border: 3px solid black;
   pointer-events: none;
@@ -89,7 +88,6 @@ body {
   background: white;
   border: 3px solid black;
   transition: transform 0.3s;
-  font-size: 1rem;
   text-align: center;
   padding: 0.5rem;
 }
