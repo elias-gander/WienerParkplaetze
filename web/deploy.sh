@@ -26,8 +26,8 @@ file_patterns=(
     "script.js"
     "styles.css"
     "parkplaetze/*.geojson"
-    "assets/tree0.png"
     "assets/explosion.gif"
+    "assets/trees/*.png"
     "assets/vehicles/sampled_tiles/*.png"
 )
 
