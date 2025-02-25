@@ -254,7 +254,8 @@ infosLinkElement.addEventListener("click", () => {
   }
 });
 map.on("load", async () => {
-  map.on("sourcedata", (e) => {
+  map.touchZoomRotate.disableRotation();
+  map.on("sourcedata", () => {
     if (map.getZoom() >= minZoom) {
       zoomHintElement.classList.add("hidden");
       loadingIndicatorElement.classList.remove("hidden");
@@ -288,6 +289,4 @@ map.on("load", async () => {
 
   map.on("moveend", loadTiles);
   await loadTiles();
-
-  map.touchZoomRotate.disableRotation();
 });
