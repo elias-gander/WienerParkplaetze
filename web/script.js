@@ -32,7 +32,7 @@ const map = new maplibregl.Map({
   zoom: 12,
   maxZoom: maxZoom,
   minZoom: 10,
-  pitch: 20,
+  pitch: 25,
   dragRotate: false,
   pitchWithRotate: false,
   rollEnabled: false,
@@ -111,7 +111,7 @@ function plantTree(lngLat, sourceId, featureId) {
       if (feature.id === featureId) {
         if (!feature.properties.isTree) {
           treesPlantedElement.textContent = format(++treesPlanted);
-          remainingParkingSpots.textContent = format(--remainingParkingSpots);
+          remainingParkingSpotsElement.textContent = format(--remainingParkingSpots);
           feature.properties.isTree = true;
         }
       }
