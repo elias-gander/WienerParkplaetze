@@ -6,6 +6,8 @@ Datenbasis ist die Flächenmehrzweckkarte (FMZK) der Magistratsabteilung für St
 
 Weitere Infos im [Blogeintrag](https://elias-gander.github.io/2025-3-11-wiener-parkplaetze).
 
+[Demo](https://elias-gander.github.io/data-visualization/wiener-parkplaetze/)
+
 ## Setup
 
 1. Repo clonen
