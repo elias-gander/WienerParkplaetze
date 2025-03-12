@@ -1,6 +1,6 @@
 # Wiener Parkplätze
 
-Berechnung und Visualisierung aller Straßenparkplätze im Wiener Stadtgebiet.
+Berechnung und Visualisierung der einzelnen Straßenparkplätze im Wiener Stadtgebiet.
 
 Datenbasis ist die Flächenmehrzweckkarte (FMZK) der Magistratsabteilung für Stadtvermessung MA 41.
 
