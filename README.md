@@ -4,9 +4,9 @@ Berechnung und Visualisierung der einzelnen Straßenparkplätze im Wiener Stadtg
 
 Datenbasis ist die Flächenmehrzweckkarte (FMZK) der Magistratsabteilung für Stadtvermessung MA 41.
 
-Weitere Infos im [Blogeintrag](https://elias-gander.github.io/2025-3-11-wiener-parkplaetze){:target="\_blank"}.
+Weitere Infos im [Blogeintrag](https://elias-gander.github.io/2025-3-11-wiener-parkplaetze).
 
-[Demo](https://elias-gander.github.io/data-visualization/wiener-parkplaetze/){:target="\_blank"}
+[Demo](https://elias-gander.github.io/data-visualization/wiener-parkplaetze/)
 
 ## Setup
 
