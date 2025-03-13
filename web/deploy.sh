@@ -29,6 +29,7 @@ file_patterns=(
     "assets/explosion.gif"
     "assets/trees/*.png"
     "assets/vehicles/sampled_tiles/*.png"
+    "notebook.html"
 )
 
 # Build rsync include/exclude parameters
