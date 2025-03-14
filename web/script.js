@@ -2,10 +2,10 @@ const minZoom = 17;
 const maxZoom = 20;
 const tileSize = 0.005;
 const gridBounds = {
-  minx: 16.20183574,
-  miny: 48.12302008,
-  maxx: 16.5464744,
-  maxy: 48.31235361,
+  minx: 16.20187827,
+  miny: 48.12305389,
+  maxx: 16.54642621,
+  maxy: 48.31233474,
 };
 const assetPixels = 256;
 const vehicleAssetRotations = [
@@ -43,7 +43,7 @@ const map = new maplibregl.Map({
   ],
 });
 var loadedTileIds = new Set();
-var remainingParkingSpots = 258205;
+var remainingParkingSpots = 241468;
 var treesPlanted = 0;
 var isPlanting = false;
 
@@ -111,7 +111,9 @@ function plantTree(lngLat, sourceId, featureId) {
       if (feature.id === featureId) {
         if (!feature.properties.isTree) {
           treesPlantedElement.textContent = format(++treesPlanted);
-          remainingParkingSpotsElement.textContent = format(--remainingParkingSpots);
+          remainingParkingSpotsElement.textContent = format(
+            --remainingParkingSpots
+          );
           feature.properties.isTree = true;
         }
       }
