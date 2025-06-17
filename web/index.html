@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Wiener Parkplätze</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=VT323&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://unpkg.com/maplibre-gl/dist/maplibre-gl.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/maplibre-gl/dist/maplibre-gl.css"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="map"></div>
+    <span id="zoom-hint">Zoomen für Parkplätze</span>
+    <span id="loading-indicator-container" class="hidden"
+      ><span id="loading-indicator"></span
+      ><span id="loading-indicator-text">Lade Kartendaten</span></span
+    >
+    <div id="stats">
+      <span class="stat" id="remaining-parking-spots"></span>
+      <span class="label">Parkplätze</span>
+      <span class="stat" id="trees-planted"></span>
+      <span class="label">Bäume gepflanzt</span>
+    </div>
+    <img id="explosion" />
+    <div id="infos">
+      <p>
+        Die Berechnung von Position, Form und Anzahl der Parkplätze basiert auf
+        den Daten der
+        <a
+          href="https://www.data.gv.at/katalog/dataset/7cf0da04-1f77-4321-929e-78172c74aa0b"
+          target="_blank"
+          >Flächen-Mehrzweckkarte</a
+        >
+        (FMZK) der Magistratsabteilung für Stadtvermessung MA 41.<br />
+      </p>
+
+      <p>
+        <a
+          href="https://elias-gander.github.io/2025-3-11-wiener-parkplaetze"
+          target="_blank"
+          >Weitere Informationen und source code.</a
+        >
+      </p>
+
+      <p>
+        Kartenmaterial von &copy;<a
+          href="https://stadiamaps.com/"
+          target="_blank"
+          >Stadia Maps</a
+        >, &copy;<a href="https://stamen.com/" target="_blank">Stamen Design</a
+        >, &copy;<a href="https://openmaptiles.org/" target="_blank"
+          >OpenMapTiles</a
+        >
+        und &copy;<a
+          href="https://www.openstreetmap.org/copyright"
+          target="_blank"
+          >OpenStreetMap</a
+        >
+      </p>
+      <p>
+        <a
+          href="https://opengameart.org/content/isometric-vehicles"
+          target="_blank"
+          >Kfz-Grafiken</a
+        >
+        von
+        <a href="http://racoon.media" target="_blank">Racoon Media</a>
+      </p>
+
+      <p>
+        <a
+          href="https://www.freepik.com/free-vector/isometric-set-park-plants-with-green-trees-bushes-various-shapes-isolated-vector-illustration_4300555.htm#fromView=search&page=1&position=29&uuid=3ad7d6d0-f7aa-4135-90d9-1d09426e6d26&query=isometric+trees"
+          target="_blank"
+          >Baum-Grafiken</a
+        >
+        von
+        <a href="http://www.freepik.com" target="_blank"
+          >macrovector / Freepik</a
+        >
+      </p>
+      <p>Mehr Platz für Menschen!</p>
+    </div>
+    <span id="infos-link">?</span>
+    <script src="script.js"></script>
+  </body>
+</html>

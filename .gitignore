@@ -1,0 +1,8 @@
+.DS_STORE
+venv
+fmzk.gpkg
+lirs.gpkg
+parkplaetze.gpkg
+*.gpkg-shm
+*.gpkg-wal
+parkplaetze
